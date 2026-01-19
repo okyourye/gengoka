@@ -34,3 +34,7 @@
 - [x] デプロイ・公開準備 <!-- id: 28 -->
     - [x] Next.jsのStatic Export設定 (GitHub Pages対応) <!-- id: 29 -->
     - [x] GitHub Actionsワークフローの作成 <!-- id: 30 -->
+
+- [x] チュートリアル機能の実装 <!-- id: 32 -->
+    - [x] チュートリアルのスライド/モーダル作成 (Build verified) <!-- id: 33 -->
+    - [x] 初回訪問時またはボタンクリックで表示 (Build verified) <!-- id: 34 -->
