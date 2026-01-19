@@ -13,7 +13,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background">
       <Header />
 
-      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4 text-center">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4 pt-24 text-center">
         <div className="max-w-3xl w-full space-y-12">
 
           <motion.div

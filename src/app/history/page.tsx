@@ -38,7 +38,7 @@ export default function HistoryPage() {
         <div className="min-h-screen bg-background text-foreground bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/10 via-background to-background">
             <Header />
 
-            <main className="container mx-auto p-4 py-12 max-w-4xl">
+            <main className="container mx-auto p-4 py-24 max-w-4xl">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.push("/")}>

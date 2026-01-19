@@ -97,7 +97,7 @@ export default function TrainingPage() {
         <div className="min-h-screen bg-background text-foreground flex flex-col">
             <Header />
 
-            <main className="flex-1 container mx-auto p-4 flex flex-col items-center justify-center max-w-4xl py-20">
+            <main className="flex-1 container mx-auto p-4 flex flex-col items-center justify-center max-w-4xl py-24">
 
                 <AnimatePresence mode="wait">
 

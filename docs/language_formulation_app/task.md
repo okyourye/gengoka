@@ -29,6 +29,7 @@
     - [x] ランダムなお題出題機能の実装 (Build verified) <!-- id: 25 -->
     - [x] タイマーロジックの修正（合計2分） (Build verified) <!-- id: 26 -->
     - [x] 日本語入力確定時のEnter挙動修正 (Build verified) <!-- id: 27 -->
+    - [x] ヘッダーの重なり修正 (Build verified) <!-- id: 31 -->
 
 - [x] デプロイ・公開準備 <!-- id: 28 -->
     - [x] Next.jsのStatic Export設定 (GitHub Pages対応) <!-- id: 29 -->
