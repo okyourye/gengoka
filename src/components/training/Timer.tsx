@@ -1,57 +1,67 @@
+
 "use client";
 
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface TimerProps {
-    duration: number; // seconds
-    timeLeft: number;
-    isRunning: boolean;
+    currentSeconds: number;
+    maxSeconds: number; // For progress calculation
+    className?: string;
+    label?: string;
 }
 
-export function Timer({ duration, timeLeft, isRunning }: TimerProps) {
-    const percent = (timeLeft / duration) * 100;
-    const isUrgent = timeLeft <= 30;
+export function Timer({ currentSeconds, maxSeconds, className, label }: TimerProps) {
+    const progress = (currentSeconds / maxSeconds) * 100;
 
-    // Normalize radius and circumference for SVG scaling
-    const radius = 40;
-    const circumference = 2 * Math.PI * radius;
+    const formatTime = (seconds: number) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}:${s.toString().padStart(2, "0")}`;
+    };
 
-    // Hydration fix: ensure client-side only rendering for time if needed, 
-    // but timeLeft is passed top-down so it should be fine. 
-    // However, avoid mismatch if initial render differs.
+    const isUrgent = currentSeconds <= 10;
 
     return (
-        <div className="relative flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16">
-            {/* Background Circle */}
-            <svg className="absolute w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle
-                    cx="50"
-                    cy="50"
-                    r={radius}
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="transparent"
-                    className="text-secondary"
-                />
-                {/* Progress Circle */}
-                <motion.circle
-                    cx="50"
-                    cy="50"
-                    r={radius}
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="transparent"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={circumference - (circumference * percent) / 100}
-                    strokeLinecap="round"
-                    className={`transition-colors duration-300 ${isUrgent ? 'text-destructive' : 'text-primary'}`}
-                    initial={{ strokeDashoffset: 0 }}
-                    animate={{ strokeDashoffset: circumference - (circumference * percent) / 100 }}
-                />
-            </svg>
-            <div className={`font-bold font-mono text-foreground ${isUrgent ? 'text-destructive' : ''} text-xs sm:text-sm`}>
-                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+        <div className={cn("relative flex flex-col items-center justify-center p-4", className)}>
+            <div className="text-sm font-medium text-muted-foreground mb-2 tracking-widest uppercase">
+                {label || "REMAINING TIME"}
+            </div>
+            <div className="relative">
+                <svg className="w-32 h-32 -rotate-90">
+                    <circle
+                        cx="64"
+                        cy="64"
+                        r="60"
+                        className="stroke-muted fill-none"
+                        strokeWidth="4"
+                    />
+                    <motion.circle
+                        cx="64"
+                        cy="64"
+                        r="60"
+                        className={cn(
+                            "fill-none transition-colors duration-500",
+                            isUrgent ? "stroke-destructive" : "stroke-primary"
+                        )}
+                        strokeWidth="4"
+                        strokeDasharray="377"
+                        strokeDashoffset={377 - (377 * progress) / 100}
+                        strokeLinecap="round"
+                        initial={false}
+                        animate={{ strokeDashoffset: 377 - (377 * progress) / 100 }}
+                        transition={{ type: "tween", ease: "linear", duration: 1 }}
+                    />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <span className={cn(
+                        "text-4xl font-bold tabular-nums tracking-tighter transition-colors",
+                        isUrgent ? "text-destructive" : "text-foreground"
+                    )}>
+                        {formatTime(currentSeconds)}
+                    </span>
+                </div>
             </div>
         </div>
     );

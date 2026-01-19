@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowDown, Plus } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 interface DeepDiveInputProps {
     value: string; // "Line 1\nLine 2\nLine 3"
@@ -36,6 +36,11 @@ export function DeepDiveInput({ value, onChange, placeholder, autoFocus }: DeepD
 
     const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
+            // IME conversion handling
+            if (e.nativeEvent.isComposing) {
+                return;
+            }
+
             e.preventDefault();
             // Add new line if current line is not empty
             if (lines[index].trim() !== "") {

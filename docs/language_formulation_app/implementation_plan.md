@@ -18,8 +18,20 @@
     - `lucide-react`: アイコン
     - `framer-motion`: アニメーション
     - `clsx`, `tailwind-merge`: スタイリングユーティリティ
+    - `dexie`, `dexie-react-hooks`: IndexedDBラッパー
 
-### 2. コンポーネント設計
+### 2. データ永続化 (IndexedDB)
+- **Library**: `Dexie.js` を使用して、ブラウザ内のIndexedDBを簡単に操作する。
+- **Schema**:
+    - `trainings` store
+        - `id`: number (auto-increment)
+        - `theme`: string
+        - `step1_thought`: string (思考)
+        - `step2_reason`: string (理由)
+        - `createdAt`: Date
+- **Backup**: 将来的なエクスポート機能を見越して、全データをJSONとしてダウンロードできるユーティリティを用意する。
+
+### 3. コンポーネント設計
 #### Layout
 - `MainLayout`: ヘッダー、フッターを含む基本レイアウト。
 

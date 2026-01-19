@@ -1,198 +1,278 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Timer } from "@/components/training/Timer";
-import { QuestionCard } from "@/components/training/QuestionCard";
 import { DeepDiveInput } from "@/components/training/DeepDiveInput";
-import { ArrowRight, CheckCircle2, RotateCcw, ArrowDown } from "lucide-react";
-import { HintSection } from "@/components/training/HintSection";
+import { db } from "@/lib/db";
+import { Header } from "@/components/layout/Header";
+import { ArrowRight, CheckCircle2, ChevronRight, HelpCircle, Save, Shuffle } from "lucide-react";
+import { PREDEFINED_THEMES } from "@/lib/themes";
 
-type Phase = "intro" | "thinking" | "reasoning" | "review";
-
-const DEFAULT_THEME = "理想の上司に必要なことは何か？";
-const TOTAL_TIME = 120; // 2 minutes total for both steps
+type Phase = "setup" | "step1" | "step2" | "review";
 
 export default function TrainingPage() {
-    const router = useRouter();
-    const [phase, setPhase] = useState<Phase>("intro");
-    // timeLeft is now shared across phases
-    const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
-    const [isRunning, setIsRunning] = useState(false);
+    const [phase, setPhase] = useState<Phase>("setup");
+    const [theme, setTheme] = useState("");
+    const [step1Input, setStep1Input] = useState("");
+    const [step2Input, setStep2Input] = useState("");
+    const [isTimerActive, setIsTimerActive] = useState(false);
 
-    const [inputs, setInputs] = useState({
-        thinking: "",
-        reasoning: ""
-    });
+    // Global Timer State
+    const MAX_TIME = 120; // 2 minutes total
+    const [remainingTime, setRemainingTime] = useState(MAX_TIME);
 
-    // Timer logic
+    // Focus management
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if ((phase === "step1" || phase === "step2") && textareaRef.current) {
+            textareaRef.current.focus();
+        }
+    }, [phase]);
+
+    // Timer Logic
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (isRunning && timeLeft > 0) {
+        if (isTimerActive && remainingTime > 0) {
             interval = setInterval(() => {
-                setTimeLeft((prev) => prev - 1);
+                setRemainingTime((prev) => {
+                    if (prev <= 1) {
+                        setIsTimerActive(false);
+                        setPhase("review"); // Time's up -> Go to review
+                        return 0;
+                    }
+                    return prev - 1;
+                });
             }, 1000);
-        } else if (timeLeft === 0) {
-            // Time is up! Move to review if not already there
-            if (phase !== "review") {
-                setPhase("review");
-                setIsRunning(false);
-            }
         }
         return () => clearInterval(interval);
-    }, [isRunning, timeLeft, phase]);
+    }, [isTimerActive, remainingTime]);
 
     const handleStart = () => {
-        setPhase("thinking");
-        setTimeLeft(TOTAL_TIME);
-        setIsRunning(true);
+        if (!theme.trim()) return;
+        setRemainingTime(MAX_TIME); // Reset timer
+        setPhase("step1");
+        setIsTimerActive(true);
     };
 
-    const handleNextPhase = () => {
-        if (phase === "thinking") {
-            setPhase("reasoning");
-            // Do NOT reset timer
-        } else if (phase === "reasoning") {
-            setPhase("review");
-            setIsRunning(false);
+    const handleStep1Complete = () => {
+        setPhase("step2");
+        // Timer continues running
+    };
+
+    const handleStep2Complete = () => {
+        setIsTimerActive(false);
+        setPhase("review");
+    };
+
+    const handleSave = async () => {
+        try {
+            if (!theme || !step1Input) return;
+            await db.trainings.add({
+                theme,
+                step1_thought: step1Input,
+                step2_reason: step2Input,
+                createdAt: new Date()
+            });
+            // Redirect or show success
+            // For now, simple alert or reset
+            alert("保存しました！");
+            // Reset for next
+            setTheme("");
+            setStep1Input("");
+            setStep2Input("");
+            setPhase("setup");
+        } catch (e) {
+            console.error("Failed to save", e);
+            alert("保存に失敗しました。");
         }
-    };
-
-    const getLastThinkingLine = () => {
-        const lines = inputs.thinking.split('\n').filter(line => line.trim() !== '');
-        return lines.length > 0 ? lines[lines.length - 1] : inputs.thinking;
     };
 
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col">
+            <Header />
 
-            <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-6 sm:py-12 flex flex-col items-center">
-
-                {/* Progress Indicator */}
-                {phase !== "intro" && phase !== "review" && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="w-full flex justify-between items-center mb-8 sticky top-20 z-40 bg-background/80 backdrop-blur-md py-4 rounded-lg px-4 border border-white/5"
-                    >
-                        <div className="text-sm font-medium text-muted-foreground">
-                            Theme: <span className="text-foreground">{DEFAULT_THEME}</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm font-bold text-primary mr-2">
-                                {phase === "thinking" ? "Step 1: 思考" : "Step 2: 理由"}
-                            </span>
-                            <Timer duration={TOTAL_TIME} timeLeft={timeLeft} isRunning={isRunning} />
-                        </div>
-                    </motion.div>
-                )}
+            <main className="flex-1 container mx-auto p-4 flex flex-col items-center justify-center max-w-4xl py-20">
 
                 <AnimatePresence mode="wait">
 
-                    {/* INTRO PHASE */}
-                    {phase === "intro" && (
+                    {/* SETUP PHASE */}
+                    {phase === "setup" && (
                         <motion.div
-                            key="intro"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="w-full max-w-2xl text-center space-y-8 mt-10"
+                            key="setup"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
+                            className="w-full max-w-lg space-y-8"
                         >
-                            <h1 className="text-3xl font-bold">トレーニングを開始します</h1>
-                            <div className="p-6 rounded-2xl bg-secondary/30 border border-white/5 text-left">
-                                <p className="text-sm text-muted-foreground mb-2">今回のお題</p>
-                                <p className="text-xl font-bold">{DEFAULT_THEME}</p>
+                            <div className="text-center space-y-2">
+                                <h1 className="text-3xl font-bold">何を言語化しますか？</h1>
+                                <p className="text-muted-foreground">今、頭の中にあるモヤモヤや、深く考えたいテーマを入力してください。</p>
                             </div>
-                            <div className="space-y-4 text-left p-6 rounded-2xl bg-secondary/10">
-                                <h3 className="font-bold flex items-center gap-2">
-                                    <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">!</span>
-                                    ルール
-                                </h3>
-                                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                                    <li>2つのステップ合わせて<strong className="text-foreground">合計2分</strong>です</li>
-                                    <li>質問に答えたら、<span className="text-primary font-bold">「それってどういうこと？」</span>と深掘りしていきましょう</li>
-                                    <li>Enterキーで次の深掘りへ進めます</li>
-                                </ul>
+
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Input
+                                        placeholder="例: 理想のリーダーシップとは？ / 最近気になっているニュースについて"
+                                        className="text-lg py-6"
+                                        value={theme}
+                                        onChange={(e) => setTheme(e.target.value)}
+                                        onKeyDown={(e) => e.key === "Enter" && handleStart()}
+                                        autoFocus
+                                    />
+                                    <div className="flex justify-end">
+                                        <button
+                                            onClick={() => {
+                                                const random = PREDEFINED_THEMES[Math.floor(Math.random() * PREDEFINED_THEMES.length)];
+                                                setTheme(random);
+                                            }}
+                                            className="text-xs text-primary/80 hover:text-primary flex items-center gap-1 transition-colors"
+                                        >
+                                            <Shuffle size={12} />
+                                            ランダムにお題を出す
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <Button onClick={handleStart} className="w-full h-12 text-lg" disabled={!theme.trim()}>
+                                    トレーニング開始 (合計2分)
+                                </Button>
                             </div>
-                            <Button size="lg" onClick={handleStart} className="w-full sm:w-auto">
-                                開始する
-                            </Button>
                         </motion.div>
                     )}
 
-                    {/* THINKING PHASE */}
-                    {phase === "thinking" && (
+                    {/* STEP 1: THINKING */}
+                    {phase === "step1" && (
                         <motion.div
-                            key="thinking"
-                            className="w-full flex flex-col lg:flex-row items-start gap-6"
-                            initial={{ opacity: 0, x: 20 }}
+                            key="step1"
+                            initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
+                            exit={{ opacity: 0, x: -50 }}
+                            className="w-full grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8"
                         >
-                            <div className="flex-1 w-full">
-                                <QuestionCard
-                                    step={1}
-                                    title="どう思う？どう感じる？"
-                                    subtitle="自分の意見や考えを明確に表現する"
-                                    description={
-                                        <span className="block text-sm">
-                                            まずは思い浮かんだことを書いてみましょう。<br />
-                                            そこから「それってどういうこと？」と自問自答を繰り返して解像度を上げます。
-                                        </span>
-                                    }
-                                />
-                                <DeepDiveInput
-                                    placeholder="例: 上司は話を聞くべき..."
-                                    value={inputs.thinking}
-                                    onChange={(val) => setInputs({ ...inputs, thinking: val })}
-                                    autoFocus
-                                />
-                                <div className="flex justify-end mt-6">
-                                    <Button onClick={handleNextPhase}>
-                                        次へ進む <ArrowRight className="ml-2 w-4 h-4" />
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <span className="text-primary font-bold tracking-wider text-sm uppercase">Step 1</span>
+                                    <h2 className="text-3xl font-bold">どう思う？ どう感じる？</h2>
+                                    <p className="text-muted-foreground bg-accent/30 p-3 rounded-md border border-accent">
+                                        テーマ: <span className="font-semibold text-foreground">{theme}</span>
+                                    </p>
+                                </div>
+
+                                <Card className="border-primary/20 bg-card/50">
+                                    <CardContent className="p-4">
+                                        <DeepDiveInput
+                                            value={step1Input}
+                                            onChange={setStep1Input}
+                                            placeholder="まずは1行、思い浮かんだことを書いてみましょう。"
+                                            autoFocus
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <div className="flex justify-end">
+                                    <Button onClick={handleStep1Complete} variant="secondary" size="lg" className="gap-2">
+                                        次へ進む <ChevronRight size={18} />
                                     </Button>
                                 </div>
                             </div>
-                            <HintSection step={1} />
+
+                            <div className="flex flex-col gap-6">
+                                <Card className="border-border/50">
+                                    <CardContent className="pt-6">
+                                        <Timer
+                                            currentSeconds={remainingTime}
+                                            maxSeconds={MAX_TIME}
+                                            label="TOTAL TIME"
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <div className="bg-secondary/30 rounded-lg p-4 space-y-3">
+                                    <div className="flex items-center gap-2 font-semibold text-primary">
+                                        <HelpCircle size={18} /> ヒント
+                                    </div>
+                                    <ul className="text-sm space-y-2 text-muted-foreground list-disc list-inside">
+                                        <li>「解像度」を上げることを意識して。</li>
+                                        <li>箇条書きで深掘りしていくのがおすすめ。</li>
+                                        <li>↓ 矢印を使って思考を繋げてみよう。</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </motion.div>
                     )}
 
-                    {/* REASONING PHASE */}
-                    {phase === "reasoning" && (
+                    {/* STEP 2: REASONING */}
+                    {phase === "step2" && (
                         <motion.div
-                            key="reasoning"
-                            className="w-full flex flex-col lg:flex-row items-start gap-6"
-                            initial={{ opacity: 0, x: 20 }}
+                            key="step2"
+                            initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
+                            exit={{ opacity: 0, x: -50 }}
+                            className="w-full grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8"
                         >
-                            <div className="flex-1 w-full">
-                                <QuestionCard
-                                    step={2}
-                                    title="なぜそう思う？"
-                                    subtitle="その考えの根拠や理由を説明する"
-                                    description={
-                                        <div className="text-sm bg-secondary/30 p-4 rounded-lg mb-4 text-left">
-                                            <span className="text-xs text-muted-foreground block mb-1">あなたの考え:</span>
-                                            <p className="italic text-foreground/90 font-medium">"{getLastThinkingLine()}"</p>
-                                        </div>
-                                    }
-                                />
-                                <DeepDiveInput
-                                    placeholder="なぜなら..."
-                                    value={inputs.reasoning}
-                                    onChange={(val) => setInputs({ ...inputs, reasoning: val })}
-                                    autoFocus
-                                />
-                                <div className="flex justify-end mt-6">
-                                    <Button onClick={handleNextPhase}>
-                                        完了する <CheckCircle2 className="ml-2 w-4 h-4" />
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <span className="text-primary font-bold tracking-wider text-sm uppercase">Step 2</span>
+                                    <h2 className="text-3xl font-bold">なぜそう思う？</h2>
+                                </div>
+
+                                {/* Reference to Step 1 */}
+                                <div className="opacity-70 hover:opacity-100 transition-opacity">
+                                    <div className="text-xs text-muted-foreground mb-1">Step 1の思考:</div>
+                                    <div className="p-3 bg-muted rounded-md text-sm border-l-4 border-muted-foreground">
+                                        {step1Input.split('\n').slice(-3).map((line, i) => (
+                                            <div key={i} className="truncate">{line}</div>
+                                        ))}
+                                        {step1Input.split('\n').length > 3 && <div className="text-xs italic mt-1">...</div>}
+                                    </div>
+                                </div>
+
+                                <Card className="border-primary/20 bg-card/50">
+                                    <CardContent className="p-4">
+                                        <DeepDiveInput
+                                            value={step2Input}
+                                            onChange={setStep2Input}
+                                            placeholder="その考えの根拠は？"
+                                            autoFocus
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <div className="flex justify-end">
+                                    <Button onClick={handleStep2Complete} size="lg" className="gap-2">
+                                        完了する <CheckCircle2 size={18} />
                                     </Button>
                                 </div>
                             </div>
-                            <HintSection step={2} />
+
+                            <div className="flex flex-col gap-6">
+                                <Card className="border-border/50">
+                                    <CardContent className="pt-6">
+                                        <Timer
+                                            currentSeconds={remainingTime}
+                                            maxSeconds={MAX_TIME}
+                                            label="TOTAL TIME"
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <div className="bg-secondary/30 rounded-lg p-4 space-y-3">
+                                    <div className="flex items-center gap-2 font-semibold text-primary">
+                                        <HelpCircle size={18} /> ヒント
+                                    </div>
+                                    <ul className="text-sm space-y-2 text-muted-foreground list-disc list-inside">
+                                        <li>「〜だから」で終わるように書いてみる。</li>
+                                        <li>客観的な視点を入れてみる。</li>
+                                        <li>自分の経験談を紐付けてみる。</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </motion.div>
                     )}
 
@@ -200,65 +280,51 @@ export default function TrainingPage() {
                     {phase === "review" && (
                         <motion.div
                             key="review"
-                            className="w-full max-w-4xl space-y-8"
-                            initial={{ opacity: 0, scale: 0.95 }}
+                            initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
+                            className="w-full max-w-3xl space-y-8"
                         >
-                            <div className="text-center mb-8">
-                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500 mb-4">
-                                    <CheckCircle2 size={32} />
+                            <div className="text-center space-y-2">
+                                <h1 className="text-3xl font-bold text-gradient">言語化完了！</h1>
+                                <p className="text-muted-foreground">お疲れ様でした。今回の思考を振り返ってみましょう。</p>
+                            </div>
+
+                            <div className="space-y-6 border rounded-xl p-8 bg-card shadow-2xl">
+                                <div className="border-b pb-4 mb-4">
+                                    <div className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Theme</div>
+                                    <h2 className="text-2xl font-bold">{theme}</h2>
                                 </div>
-                                <h2 className="text-3xl font-bold">トレーニング完了</h2>
-                                <p className="text-muted-foreground mt-2">
-                                    {timeLeft === 0 ? "タイムアップ！" : "お疲れ様でした！"}
-                                    <br />以下のプロセスで言語化を行いました
-                                </p>
+
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <div className="text-sm font-semibold text-primary flex items-center gap-2">Step 1: 思考</div>
+                                        <div className="p-4 bg-secondary/20 rounded-lg whitespace-pre-wrap min-h-[150px] text-sm leading-relaxed">
+                                            {step1Input}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="text-sm font-semibold text-primary flex items-center gap-2">Step 2: 理由</div>
+                                        <div className="p-4 bg-secondary/20 rounded-lg whitespace-pre-wrap min-h-[150px] text-sm leading-relaxed">
+                                            {step2Input}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <ResultCard title="思考プロセス (Step 1)" content={inputs.thinking} />
-                                <ResultCard title="理由・根拠 (Step 2)" content={inputs.reasoning} />
-                            </div>
-
-                            <div className="flex justify-center gap-4 mt-8">
-                                <Button variant="outline" onClick={() => router.push("/")}>
-                                    トップへ戻る
+                            <div className="flex justify-center gap-4">
+                                <Button onClick={() => window.location.reload()} variant="outline" size="lg">
+                                    破棄して終了
                                 </Button>
-                                <Button onClick={() => setPhase('intro')}>
-                                    <RotateCcw className="mr-2 w-4 h-4" />
-                                    もう一度行う
+                                <Button onClick={handleSave} size="lg" className="w-48 gap-2">
+                                    <Save size={18} />
+                                    保存する
                                 </Button>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
+
             </main>
         </div>
     );
-}
-
-function ResultCard({ title, content }: { title: string; content: string }) {
-    const lines = content.split('\n').filter(l => l.trim());
-    return (
-        <div className="p-6 rounded-2xl bg-secondary/30 border border-white/5 h-full">
-            <h3 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider border-b border-white/5 pb-2">
-                {title}
-            </h3>
-            <div className="space-y-4">
-                {lines.map((line, i) => (
-                    <div key={i} className="relative">
-                        {i > 0 && (
-                            <div className="flex items-center gap-1 my-1 pl-2 text-xs text-muted-foreground/50">
-                                <ArrowDown size={12} />
-                                <span>深掘り</span>
-                            </div>
-                        )}
-                        <p className={`text-foreground/90 leading-relaxed ${i === lines.length - 1 ? "font-bold text-primary text-lg" : ""}`}>
-                            {line}
-                        </p>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
 }
