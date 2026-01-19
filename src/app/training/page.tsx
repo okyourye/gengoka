@@ -165,11 +165,17 @@ export default function TrainingPage() {
                                 </div>
 
                                 <Card className="border-primary/20 bg-card/50">
+                                    <div className="px-4 pt-3 pb-0">
+                                        <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                                            <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px]">POINT</span>
+                                            箇条書きで、矢印（↓）を使って深掘りしていきましょう
+                                        </div>
+                                    </div>
                                     <CardContent className="p-4">
                                         <DeepDiveInput
                                             value={step1Input}
                                             onChange={setStep1Input}
-                                            placeholder="まずは1行、思い浮かんだことを書いてみましょう。"
+                                            placeholder="例：チームメンバーの意見を聞く"
                                             autoFocus
                                         />
                                     </CardContent>
@@ -234,11 +240,17 @@ export default function TrainingPage() {
                                 </div>
 
                                 <Card className="border-primary/20 bg-card/50">
+                                    <div className="px-4 pt-3 pb-0">
+                                        <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                                            <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px]">POINT</span>
+                                            「〜だから」と理由を深掘りしていきましょう
+                                        </div>
+                                    </div>
                                     <CardContent className="p-4">
                                         <DeepDiveInput
                                             value={step2Input}
                                             onChange={setStep2Input}
-                                            placeholder="その考えの根拠は？"
+                                            placeholder="例：上司ひとりの視点には限界があるから"
                                             autoFocus
                                         />
                                     </CardContent>

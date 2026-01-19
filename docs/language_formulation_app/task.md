@@ -38,3 +38,7 @@
 - [x] チュートリアル機能の実装 <!-- id: 32 -->
     - [x] チュートリアルのスライド/モーダル作成 (Build verified) <!-- id: 33 -->
     - [x] 初回訪問時またはボタンクリックで表示 (Build verified) <!-- id: 34 -->
+
+- [x] UI/UX改善 (User Feedback) <!-- id: 35 -->
+    - [x] チュートリアル再表示時のリセット修正 (Build verified) <!-- id: 36 -->
+    - [x] 入力欄のガイド・プレースホルダー強化 (Build verified) <!-- id: 37 -->

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ChevronLeft, ArrowDown, CheckCircle2, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,13 @@ interface TutorialModalProps {
 
 export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
     const [step, setStep] = useState(0);
+
+    // Reset step when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setStep(0);
+        }
+    }, [isOpen]);
 
     const totalSteps = 4;
 
