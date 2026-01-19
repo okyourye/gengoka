@@ -311,6 +311,27 @@ export default function TrainingPage() {
                                 </div>
                             </div>
 
+                            <div className="bg-secondary/20 border border-primary/20 rounded-xl p-6 space-y-3">
+                                <h3 className="font-semibold flex items-center gap-2 text-primary">
+                                    <HelpCircle size={18} />
+                                    振り返りのヒント
+                                </h3>
+                                <div className="grid md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                                    <div className="flex items-start gap-2">
+                                        <CheckCircle2 size={16} className="mt-0.5 text-primary/60" />
+                                        <span>「なんとなく」などの曖昧な言葉を具体化できましたか？</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <CheckCircle2 size={16} className="mt-0.5 text-primary/60" />
+                                        <span>「なぜ？」を繰り返して本質的な理由に辿り着けましたか？</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <CheckCircle2 size={16} className="mt-0.5 text-primary/60" />
+                                        <span>思考のつながりを意識して書き出せましたか？</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="flex justify-center gap-4">
                                 <Button onClick={() => window.location.reload()} variant="outline" size="lg">
                                     破棄して終了
