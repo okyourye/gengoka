@@ -91,10 +91,11 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                                 {step === 1 && (
                                     <div className="space-y-4 animate-in slide-in-from-right-8 duration-300">
                                         <div className="text-sm font-bold text-primary tracking-wider uppercase">Step 1</div>
-                                        <h2 className="text-2xl font-bold">思考の解像度を高める</h2>
+                                        <h2 className="text-2xl font-bold">STEP 1で入力すること</h2>
                                         <p className="text-muted-foreground">
                                             「理想の上司に必要なことは？」というお題を例に、<br />
-                                            <span className="text-primary font-bold">「それってどういうこと？」</span>と自問自答を繰り返します。
+                                            <span className="text-primary font-bold">「それってどういうこと？」</span>と自問自答を繰り返し、<br />
+                                            思いつくことを箇条書きでどんどん書いていきます。
                                         </p>
 
                                         <div className="mt-6 bg-secondary/20 p-6 rounded-xl space-y-3 font-medium">
@@ -122,9 +123,9 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                                 {step === 2 && (
                                     <div className="space-y-4 animate-in slide-in-from-right-8 duration-300">
                                         <div className="text-sm font-bold text-primary tracking-wider uppercase">Step 2</div>
-                                        <h2 className="text-2xl font-bold">理由の解像度を高める</h2>
+                                        <h2 className="text-2xl font-bold">STEP 2で入力すること</h2>
                                         <p className="text-muted-foreground">
-                                            導き出した「相手の視点を尊重する」に対して、<br />
+                                            先ほど導き出した「相手の視点を尊重する」に対して、<br />
                                             今度は<span className="text-primary font-bold">「なぜそう思う？」</span>と理由を深掘りします。
                                         </p>
 
@@ -157,8 +158,8 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                                         </div>
                                         <h2 className="text-3xl font-bold">準備完了です！</h2>
                                         <p className="text-muted-foreground text-lg">
-                                            解像度の高い<span className="text-foreground font-bold">「思考(1-4)」</span>と、<br />
-                                            それを支える強固な<span className="text-foreground font-bold">「理由(2-4)」</span>。<br />
+                                            解像度の高い<br /><span className="text-foreground font-bold">「相手の視点を尊重する」</span>という思考と、<br />
+                                            それを支える強固な<br /><span className="text-foreground font-bold">「チームメンバーのモチベーションも上がる」</span><br />という理由。<br />
                                             この2つが揃ったとき、あなたの言葉は相手に深く刺さります。
                                         </p>
                                         <div className="pt-8">

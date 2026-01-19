@@ -41,4 +41,6 @@
 
 - [x] UI/UX改善 (User Feedback) <!-- id: 35 -->
     - [x] チュートリアル再表示時のリセット修正 (Build verified) <!-- id: 36 -->
+    - [x] チュートリアル再表示時のリセット修正 (Build verified) <!-- id: 36 -->
     - [x] 入力欄のガイド・プレースホルダー強化 (Build verified) <!-- id: 37 -->
+    - [x] チュートリアル文言の修正（具体的・アクション指向に） (Build verified) <!-- id: 38 -->
