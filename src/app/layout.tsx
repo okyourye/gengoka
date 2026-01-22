@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gengoka - 言語化トレーニング",
-  description: "「書きながら考える」思考の解像度を上げるトレーニングアプリ",
+  title: "Gengoka - 思考の解像度を上げる言語化トレーニング",
+  description: "「なんとなく」考えていることを、2分間の自問自答で明確な言葉にするトレーニングアプリです。",
+  icons: {
+    icon: [
+      { url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export default function RootLayout({

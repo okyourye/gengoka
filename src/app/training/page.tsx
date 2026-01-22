@@ -153,25 +153,37 @@ export default function TrainingPage() {
                             initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -50 }}
-                            className="w-full grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8"
+                            className="w-full grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 md:gap-8"
                         >
-                            <div className="space-y-6">
+                            <div className="space-y-4 md:space-y-6 flex flex-col h-full">
                                 <div className="space-y-2">
-                                    <span className="text-primary font-bold tracking-wider text-sm uppercase">Step 1</span>
-                                    <h2 className="text-3xl font-bold">どう思う？ どう感じる？</h2>
-                                    <p className="text-muted-foreground bg-accent/30 p-3 rounded-md border border-accent">
-                                        テーマ: <span className="font-semibold text-foreground">{theme}</span>
-                                    </p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-primary font-bold tracking-wider text-xs md:text-sm uppercase bg-primary/10 px-2 py-0.5 rounded">Step 1</span>
+                                            {/* Mobile Timer moved here */}
+                                            <div className="md:hidden">
+                                                <Timer currentSeconds={remainingTime} maxSeconds={MAX_TIME} size="sm" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h2 className="text-xl md:text-3xl font-bold">どう思う？ どう感じる？</h2>
+
+                                    {/* Compact Theme for Mobile */}
+                                    <div className="text-muted-foreground bg-accent/30 p-2 md:p-3 rounded-md border border-accent text-sm md:text-base">
+                                        <div className="text-xs opacity-70 mb-0.5">Theme</div>
+                                        <div className="font-semibold text-foreground line-clamp-2 md:line-clamp-none leading-tight">{theme}</div>
+                                    </div>
                                 </div>
 
-                                <Card className="border-primary/20 bg-card/50">
-                                    <div className="px-4 pt-3 pb-0">
-                                        <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                                <Card className="border-primary/20 bg-card/50 flex-1 flex flex-col">
+                                    <div className="px-3 md:px-4 pt-3 pb-0">
+                                        <div className="text-[10px] md:text-xs text-muted-foreground font-medium flex items-center gap-1">
                                             <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px]">POINT</span>
                                             箇条書きで、矢印（↓）を使って深掘りしていきましょう
                                         </div>
                                     </div>
-                                    <CardContent className="p-4">
+                                    <CardContent className="p-3 md:p-4 flex-1">
                                         <DeepDiveInput
                                             value={step1Input}
                                             onChange={setStep1Input}
@@ -179,16 +191,18 @@ export default function TrainingPage() {
                                             autoFocus
                                         />
                                     </CardContent>
+                                    {/* Mobile Action Button inside Card for easier reach? Or keep outside? 
+                                        Let's keep outside but closer. */}
                                 </Card>
 
-                                <div className="flex justify-end">
-                                    <Button onClick={handleStep1Complete} variant="secondary" size="lg" className="gap-2">
+                                <div className="flex justify-end sticky bottom-4 z-10 md:static">
+                                    <Button onClick={handleStep1Complete} variant="secondary" size="lg" className="gap-2 shadow-lg md:shadow-none w-full md:w-auto">
                                         次へ進む <ChevronRight size={18} />
                                     </Button>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-6">
+                            <div className="hidden md:flex flex-col gap-6">
                                 <Card className="border-border/50">
                                     <CardContent className="pt-6">
                                         <Timer
@@ -220,18 +234,26 @@ export default function TrainingPage() {
                             initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -50 }}
-                            className="w-full grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8"
+                            className="w-full grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 md:gap-8"
                         >
-                            <div className="space-y-6">
+                            <div className="space-y-4 md:space-y-6 flex flex-col h-full">
                                 <div className="space-y-2">
-                                    <span className="text-primary font-bold tracking-wider text-sm uppercase">Step 2</span>
-                                    <h2 className="text-3xl font-bold">なぜそう思う？</h2>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-primary font-bold tracking-wider text-xs md:text-sm uppercase bg-primary/10 px-2 py-0.5 rounded">Step 2</span>
+                                            {/* Mobile Timer moved here */}
+                                            <div className="md:hidden">
+                                                <Timer currentSeconds={remainingTime} maxSeconds={MAX_TIME} size="sm" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h2 className="text-xl md:text-3xl font-bold">なぜそう思う？</h2>
                                 </div>
 
                                 {/* Reference to Step 1 */}
                                 <div className="opacity-70 hover:opacity-100 transition-opacity">
                                     <div className="text-xs text-muted-foreground mb-1">Step 1の思考:</div>
-                                    <div className="p-3 bg-muted rounded-md text-sm border-l-4 border-muted-foreground">
+                                    <div className="p-2 md:p-3 bg-muted rounded-md text-xs md:text-sm border-l-4 border-muted-foreground">
                                         {step1Input.split('\n').slice(-3).map((line, i) => (
                                             <div key={i} className="truncate">{line}</div>
                                         ))}
@@ -239,14 +261,14 @@ export default function TrainingPage() {
                                     </div>
                                 </div>
 
-                                <Card className="border-primary/20 bg-card/50">
-                                    <div className="px-4 pt-3 pb-0">
-                                        <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                                <Card className="border-primary/20 bg-card/50 flex-1 flex flex-col">
+                                    <div className="px-3 md:px-4 pt-3 pb-0">
+                                        <div className="text-[10px] md:text-xs text-muted-foreground font-medium flex items-center gap-1">
                                             <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px]">POINT</span>
                                             「〜だから」と理由を深掘りしていきましょう
                                         </div>
                                     </div>
-                                    <CardContent className="p-4">
+                                    <CardContent className="p-3 md:p-4 flex-1">
                                         <DeepDiveInput
                                             value={step2Input}
                                             onChange={setStep2Input}
@@ -254,16 +276,17 @@ export default function TrainingPage() {
                                             autoFocus
                                         />
                                     </CardContent>
+                                    {/* Mobile action button closer to input */}
                                 </Card>
 
-                                <div className="flex justify-end">
-                                    <Button onClick={handleStep2Complete} size="lg" className="gap-2">
+                                <div className="flex justify-end sticky bottom-4 z-10 md:static">
+                                    <Button onClick={handleStep2Complete} size="lg" className="gap-2 shadow-lg md:shadow-none w-full md:w-auto">
                                         完了する <CheckCircle2 size={18} />
                                     </Button>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-6">
+                            <div className="hidden md:flex flex-col gap-6">
                                 <Card className="border-border/50">
                                     <CardContent className="pt-6">
                                         <Timer

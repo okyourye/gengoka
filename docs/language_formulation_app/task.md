@@ -44,3 +44,7 @@
     - [x] チュートリアル再表示時のリセット修正 (Build verified) <!-- id: 36 -->
     - [x] 入力欄のガイド・プレースホルダー強化 (Build verified) <!-- id: 37 -->
     - [x] チュートリアル文言の修正（具体的・アクション指向に） (Build verified) <!-- id: 38 -->
+
+- [x] コンテンツ・メタデータ拡充 <!-- id: 39 -->
+    - [x] ランダムお題パターンの追加 (Build verified) <!-- id: 40 -->
+    - [x] サイトメタデータ（Title, Favicon等）の調整 (Build verified) <!-- id: 41 -->
