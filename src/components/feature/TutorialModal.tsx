@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronRight, ChevronLeft, ArrowDown, CheckCircle2, Lightbulb } from "lucide-react";
+import { X, ChevronRight, ArrowDown, CheckCircle2, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TutorialModalProps {
@@ -13,18 +13,16 @@ interface TutorialModalProps {
 export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
     const [step, setStep] = useState(0);
 
-    // Reset step when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            setStep(0);
-        }
-    }, [isOpen]);
-
     const totalSteps = 4;
+
+    const closeTutorial = () => {
+        setStep(0);
+        onClose();
+    };
 
     const nextStep = () => {
         if (step < totalSteps - 1) setStep(step + 1);
-        else onClose();
+        else closeTutorial();
     };
 
     const prevStep = () => {
@@ -42,7 +40,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
+                        onClick={closeTutorial}
                         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
                     />
 
@@ -54,7 +52,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                         className="relative w-full max-w-2xl bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
                     >
                         <div className="absolute top-4 right-4 z-10">
-                            <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-muted">
+                            <Button variant="ghost" size="icon" onClick={closeTutorial} className="hover:bg-muted">
                                 <X className="w-5 h-5" />
                             </Button>
                         </div>
@@ -163,7 +161,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                                             この2つが揃ったとき、あなたの言葉は相手に深く刺さります。
                                         </p>
                                         <div className="pt-8">
-                                            <Button size="lg" className="w-full text-lg h-14" onClick={onClose}>
+                                            <Button size="lg" className="w-full text-lg h-14" onClick={closeTutorial}>
                                                 トレーニングを始める
                                             </Button>
                                         </div>
@@ -174,7 +172,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                             {/* Footer Navigation */}
                             {step < 3 && (
                                 <div className="flex items-center justify-between mt-8 pt-4 border-t border-border/50">
-                                    <Button variant="ghost" onClick={step === 0 ? onClose : prevStep} className="text-muted-foreground">
+                                    <Button variant="ghost" onClick={step === 0 ? closeTutorial : prevStep} className="text-muted-foreground">
                                         {step === 0 ? "スキップ" : "戻る"}
                                     </Button>
                                     <div className="flex gap-1">

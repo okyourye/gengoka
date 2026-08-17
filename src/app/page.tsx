@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, PenTool } from "lucide-react";
+import { PenTool } from "lucide-react";
 import { motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { useRouter } from "next/navigation";

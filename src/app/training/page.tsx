@@ -5,12 +5,12 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Timer } from "@/components/training/Timer";
 import { DeepDiveInput } from "@/components/training/DeepDiveInput";
 import { db } from "@/lib/db";
 import { Header } from "@/components/layout/Header";
-import { ArrowRight, CheckCircle2, ChevronRight, HelpCircle, Save, Shuffle } from "lucide-react";
+import { CheckCircle2, ChevronRight, HelpCircle, Save, Shuffle } from "lucide-react";
 import { PREDEFINED_THEMES } from "@/lib/themes";
 
 type Phase = "setup" | "step1" | "step2" | "review";
