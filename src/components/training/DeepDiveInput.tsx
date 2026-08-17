@@ -19,10 +19,6 @@ export function DeepDiveInput({ value, onChange, placeholder, autoFocus }: DeepD
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     useEffect(() => {
-        // Sync external value changes if needed, but mostly we drive from internal state
-    }, [value]);
-
-    useEffect(() => {
         if (activeLineIndex >= 0 && inputRefs.current[activeLineIndex]) {
             inputRefs.current[activeLineIndex]?.focus();
         }
@@ -101,6 +97,7 @@ export function DeepDiveInput({ value, onChange, placeholder, autoFocus }: DeepD
                                 <input
                                     ref={(el) => { inputRefs.current[index] = el }}
                                     type="text"
+                                    autoFocus={autoFocus && index === 0}
                                     value={line}
                                     onChange={(e) => updateLine(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
