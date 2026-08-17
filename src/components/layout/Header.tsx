@@ -29,8 +29,9 @@ export function Header() {
                             size="sm"
                             onClick={() => setIsTutorialOpen(true)}
                             className="text-muted-foreground hover:text-primary gap-2"
+                            aria-label="使い方を開く"
                         >
-                            <CircleHelp size={18} />
+                            <CircleHelp size={18} aria-hidden="true" />
                             <span className="hidden md:inline">使い方</span>
                         </Button>
                         {/* <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground transition-colors ml-4">
