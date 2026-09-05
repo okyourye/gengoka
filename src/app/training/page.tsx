@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +17,17 @@ import { PREDEFINED_THEMES } from "@/lib/themes";
 type Phase = "setup" | "step1" | "step2" | "review";
 
 export default function TrainingPage() {
+    return (
+        <Suspense fallback={null}>
+            <TrainingPageContent />
+        </Suspense>
+    );
+}
+
+function TrainingPageContent() {
+    const searchParams = useSearchParams();
     const [phase, setPhase] = useState<Phase>("setup");
-    const [theme, setTheme] = useState("");
+    const [theme, setTheme] = useState(() => searchParams.get("theme") ?? "");
     const [step1Input, setStep1Input] = useState("");
     const [step2Input, setStep2Input] = useState("");
     const [isTimerActive, setIsTimerActive] = useState(false);
