@@ -24,6 +24,12 @@ export function Header() {
                     </Link>
 
                     <nav className="flex items-center gap-2">
+                        <Link
+                            href="/questions"
+                            className="text-sm text-muted-foreground hover:text-primary transition-colors px-2"
+                        >
+                            質問一覧
+                        </Link>
                         <Button
                             variant="ghost"
                             size="sm"
