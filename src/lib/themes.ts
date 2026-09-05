@@ -512,3 +512,9 @@ export const QUESTIONS: Question[] = [
 
 // 既存コードとの後方互換（ランダム抽出用）
 export const PREDEFINED_THEMES = QUESTIONS.map((q) => q.text);
+
+export const FEATURED_THEMES = [
+    "1年後、どんな人間になっていたいか？",
+    "「仕事ができる」とは何か？",
+    "自分の好きな点は？",
+];

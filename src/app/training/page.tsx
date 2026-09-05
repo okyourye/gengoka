@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,11 @@ import { Timer } from "@/components/training/Timer";
 import { DeepDiveInput } from "@/components/training/DeepDiveInput";
 import { db } from "@/lib/db";
 import { Header } from "@/components/layout/Header";
-import { CheckCircle2, ChevronRight, HelpCircle, Save, Shuffle } from "lucide-react";
-import { PREDEFINED_THEMES } from "@/lib/themes";
+import { AlertCircle, CheckCircle2, ChevronRight, HelpCircle, Loader2, Save, Shuffle, X } from "lucide-react";
+import { FEATURED_THEMES, PREDEFINED_THEMES } from "@/lib/themes";
 
 type Phase = "setup" | "step1" | "step2" | "review";
+type SaveNotice = { type: "success" | "error"; message: string } | null;
 
 export default function TrainingPage() {
     return (
@@ -31,19 +32,12 @@ function TrainingPageContent() {
     const [step1Input, setStep1Input] = useState("");
     const [step2Input, setStep2Input] = useState("");
     const [isTimerActive, setIsTimerActive] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveNotice, setSaveNotice] = useState<SaveNotice>(null);
 
     // Global Timer State
     const MAX_TIME = 120; // 2 minutes total
     const [remainingTime, setRemainingTime] = useState(MAX_TIME);
-
-    // Focus management
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    useEffect(() => {
-        if ((phase === "step1" || phase === "step2") && textareaRef.current) {
-            textareaRef.current.focus();
-        }
-    }, [phase]);
 
     // Timer Logic
     useEffect(() => {
@@ -53,7 +47,6 @@ function TrainingPageContent() {
                 setRemainingTime((prev) => {
                     if (prev <= 1) {
                         setIsTimerActive(false);
-                        setPhase("review"); // Time's up -> Go to review
                         return 0;
                     }
                     return prev - 1;
@@ -65,41 +58,46 @@ function TrainingPageContent() {
 
     const handleStart = () => {
         if (!theme.trim()) return;
+        setSaveNotice(null);
         setRemainingTime(MAX_TIME); // Reset timer
         setPhase("step1");
         setIsTimerActive(true);
     };
 
     const handleStep1Complete = () => {
+        if (!step1Input.trim()) return;
         setPhase("step2");
         // Timer continues running
     };
 
     const handleStep2Complete = () => {
+        if (!step2Input.trim()) return;
         setIsTimerActive(false);
         setPhase("review");
     };
 
     const handleSave = async () => {
+        if (!theme.trim() || !step1Input.trim() || !step2Input.trim() || isSaving) return;
+
+        setIsSaving(true);
+        setSaveNotice(null);
         try {
-            if (!theme || !step1Input) return;
             await db.trainings.add({
-                theme,
-                step1_thought: step1Input,
-                step2_reason: step2Input,
+                theme: theme.trim(),
+                step1_thought: step1Input.trim(),
+                step2_reason: step2Input.trim(),
                 createdAt: new Date()
             });
-            // Redirect or show success
-            // For now, simple alert or reset
-            alert("保存しました！");
-            // Reset for next
             setTheme("");
             setStep1Input("");
             setStep2Input("");
             setPhase("setup");
+            setSaveNotice({ type: "success", message: "保存しました。履歴からいつでも見返せます。" });
         } catch (e) {
             console.error("Failed to save", e);
-            alert("保存に失敗しました。");
+            setSaveNotice({ type: "error", message: "保存できませんでした。時間をおいてもう一度お試しください。" });
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -127,23 +125,41 @@ function TrainingPageContent() {
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
+                                    <label htmlFor="training-theme" className="sr-only">言語化するテーマ</label>
                                     <Input
-                                        placeholder="例: 理想のリーダーシップとは？ / 最近気になっているニュースについて"
+                                        id="training-theme"
+                                        placeholder="例：理想の働き方について"
                                         className="text-lg py-6"
                                         value={theme}
                                         onChange={(e) => setTheme(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && handleStart()}
                                         autoFocus
                                     />
-                                    <div className="flex justify-end">
+                                    <div className="space-y-2 pt-1">
+                                        <div className="text-sm font-medium text-muted-foreground">テーマ例から選ぶ</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {FEATURED_THEMES.map((featuredTheme) => (
+                                                <button
+                                                    key={featuredTheme}
+                                                    type="button"
+                                                    onClick={() => setTheme(featuredTheme)}
+                                                    className="rounded-full border border-primary/25 bg-primary/5 px-3 py-2 text-sm text-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                                >
+                                                    {featuredTheme}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end pt-1">
                                         <button
+                                            type="button"
                                             onClick={() => {
                                                 const random = PREDEFINED_THEMES[Math.floor(Math.random() * PREDEFINED_THEMES.length)];
                                                 setTheme(random);
                                             }}
-                                            className="text-xs text-primary/80 hover:text-primary flex items-center gap-1 transition-colors"
+                                            className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         >
-                                            <Shuffle size={12} />
+                                            <Shuffle size={14} aria-hidden="true" />
                                             ランダムにお題を出す
                                         </button>
                                     </div>
@@ -169,7 +185,7 @@ function TrainingPageContent() {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-primary font-bold tracking-wider text-xs md:text-sm uppercase bg-primary/10 px-2 py-0.5 rounded">Step 1</span>
+                                            <span className="text-primary font-bold tracking-wider text-sm uppercase bg-primary/10 px-2 py-1 rounded" aria-label="全2ステップ中1ステップ目">Step 1 / 2</span>
                                             {/* Mobile Timer moved here */}
                                             <div className="md:hidden">
                                                 <Timer currentSeconds={remainingTime} maxSeconds={MAX_TIME} size="sm" />
@@ -188,8 +204,8 @@ function TrainingPageContent() {
 
                                 <Card className="border-primary/20 bg-card/50 flex-1 flex flex-col">
                                     <div className="px-3 md:px-4 pt-3 pb-0">
-                                        <div className="text-[10px] md:text-xs text-muted-foreground font-medium flex items-center gap-1">
-                                            <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px]">POINT</span>
+                                        <div className="text-sm text-muted-foreground font-medium flex items-center gap-2 leading-relaxed">
+                                            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">POINT</span>
                                             箇条書きで、矢印（↓）を使って深掘りしていきましょう
                                         </div>
                                     </div>
@@ -206,10 +222,11 @@ function TrainingPageContent() {
                                 </Card>
 
                                 <div className="flex justify-end sticky bottom-4 z-10 md:static">
-                                    <Button onClick={handleStep1Complete} variant="secondary" size="lg" className="gap-2 shadow-lg md:shadow-none w-full md:w-auto">
+                                    <Button onClick={handleStep1Complete} variant="secondary" size="lg" className="gap-2 shadow-lg md:shadow-none w-full md:w-auto" disabled={!step1Input.trim()} aria-describedby={!step1Input.trim() ? "step1-requirement" : undefined}>
                                         次へ進む <ChevronRight size={18} />
                                     </Button>
                                 </div>
+                                {!step1Input.trim() && <p id="step1-requirement" className="text-center text-sm text-muted-foreground md:text-right">1行以上入力すると次へ進めます</p>}
                             </div>
 
                             <div className="hidden md:flex flex-col gap-6">
@@ -250,7 +267,7 @@ function TrainingPageContent() {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-primary font-bold tracking-wider text-xs md:text-sm uppercase bg-primary/10 px-2 py-0.5 rounded">Step 2</span>
+                                            <span className="text-primary font-bold tracking-wider text-sm uppercase bg-primary/10 px-2 py-1 rounded" aria-label="全2ステップ中2ステップ目">Step 2 / 2</span>
                                             {/* Mobile Timer moved here */}
                                             <div className="md:hidden">
                                                 <Timer currentSeconds={remainingTime} maxSeconds={MAX_TIME} size="sm" />
@@ -273,8 +290,8 @@ function TrainingPageContent() {
 
                                 <Card className="border-primary/20 bg-card/50 flex-1 flex flex-col">
                                     <div className="px-3 md:px-4 pt-3 pb-0">
-                                        <div className="text-[10px] md:text-xs text-muted-foreground font-medium flex items-center gap-1">
-                                            <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px]">POINT</span>
+                                        <div className="text-sm text-muted-foreground font-medium flex items-center gap-2 leading-relaxed">
+                                            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">POINT</span>
                                             「〜だから」と理由を深掘りしていきましょう
                                         </div>
                                     </div>
@@ -290,10 +307,11 @@ function TrainingPageContent() {
                                 </Card>
 
                                 <div className="flex justify-end sticky bottom-4 z-10 md:static">
-                                    <Button onClick={handleStep2Complete} size="lg" className="gap-2 shadow-lg md:shadow-none w-full md:w-auto">
+                                    <Button onClick={handleStep2Complete} size="lg" className="gap-2 shadow-lg md:shadow-none w-full md:w-auto" disabled={!step2Input.trim()} aria-describedby={!step2Input.trim() ? "step2-requirement" : undefined}>
                                         完了する <CheckCircle2 size={18} />
                                     </Button>
                                 </div>
+                                {!step2Input.trim() && <p id="step2-requirement" className="text-center text-sm text-muted-foreground md:text-right">1行以上入力すると完了できます</p>}
                             </div>
 
                             <div className="hidden md:flex flex-col gap-6">
@@ -381,11 +399,30 @@ function TrainingPageContent() {
                                 <Button onClick={() => window.location.reload()} variant="outline" size="lg">
                                     破棄して終了
                                 </Button>
-                                <Button onClick={handleSave} size="lg" className="w-48 gap-2">
-                                    <Save size={18} />
-                                    保存する
+                                <Button onClick={handleSave} size="lg" className="w-48 gap-2" disabled={isSaving || !step1Input.trim() || !step2Input.trim()}>
+                                    {isSaving ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Save size={18} aria-hidden="true" />}
+                                    {isSaving ? "保存中…" : "保存する"}
                                 </Button>
                             </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                    {saveNotice && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            role={saveNotice.type === "error" ? "alert" : "status"}
+                            aria-live="polite"
+                            className={`fixed bottom-6 left-4 right-4 z-50 mx-auto flex max-w-md items-center gap-3 rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-md ${saveNotice.type === "success" ? "border-primary/30 bg-card/95 text-foreground" : "border-destructive/40 bg-card/95 text-destructive"}`}
+                        >
+                            {saveNotice.type === "success" ? <CheckCircle2 className="shrink-0 text-primary" aria-hidden="true" /> : <AlertCircle className="shrink-0" aria-hidden="true" />}
+                            <span className="flex-1 text-sm font-medium">{saveNotice.message}</span>
+                            <button type="button" onClick={() => setSaveNotice(null)} className="rounded-md p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="通知を閉じる">
+                                <X size={18} aria-hidden="true" />
+                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>
